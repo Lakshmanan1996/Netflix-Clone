@@ -1,29 +1,44 @@
 pipeline {
   agent any
+
   environment {
     IMAGE_NAME = "lakshmanan1996/netflix-clone:latest"
   }
 
   stages {
+
     stage('Checkout') {
       steps {
-        git 'https://github.com/Lakshmanan1996/Netflix-Clone.git'
+        echo "Code already checked out by Jenkins"
       }
     }
 
-    stage('Build') {
+    stage('Install Dependencies') {
       steps {
         sh 'yarn install'
+      }
+    }
+
+    stage('Build Application') {
+      steps {
         sh 'yarn build'
       }
     }
 
-    stage('Docker Build & Push') {
+    stage('Docker Build') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
-        usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+        sh 'docker build -t $IMAGE_NAME .'
+      }
+    }
+
+    stage('Push to DockerHub') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub-creds',
+          usernameVariable: 'USER',
+          passwordVariable: 'PASS'
+        )]) {
           sh 'docker login -u $USER -p $PASS'
-          sh 'docker build -t $IMAGE_NAME .'
           sh 'docker push $IMAGE_NAME'
         }
       }
