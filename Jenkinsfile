@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        IMAGE = "<DOCKERHUB_USERNAME>/netflix-clone"
+        IMAGE = "dockerhubusername/netflix"
         TAG = "latest"
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
-                git 'https://github.com/Lakshmanan1996/Netflix-Clone.git'
+                checkout scm
             }
         }
 
@@ -20,27 +20,18 @@ pipeline {
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh '''
+                      echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                      docker push $IMAGE:$TAG
+                    '''
                 }
-            }
-        }
-
-        stage('Push Image') {
-            steps {
-                sh 'docker push $IMAGE:$TAG'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh 'kubectl apply -f k8s/'
             }
         }
     }
