@@ -7,9 +7,9 @@ pipeline {
         IMAGE_NAME      = "netflix"
         IMAGE_TAG       = "latest"
 
-        // Kubernetes YAML files
-        KUBE_DEPLOYMENT = "deployment.yaml"
-        KUBE_SERVICE    = "service.yaml"
+        // Kubernetes YAML files in k8s folder
+        KUBE_DEPLOYMENT = "k8s/deployment.yaml"
+        KUBE_SERVICE    = "k8s/service.yaml"
     }
 
     stages {
@@ -57,11 +57,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying to Kubernetes cluster..."
-                // Use Secret File method for kubeconfig
                 withCredentials([file(credentialsId: 'kube-config-id', variable: 'KUBECONFIG_FILE')]) {
                     sh '''
                       export KUBECONFIG=$KUBECONFIG_FILE
-                      kubectl apply -f $KUBE_DEPLOYMENT --record
+                      kubectl apply -f $KUBE_DEPLOYMENT
                       kubectl apply -f $KUBE_SERVICE
                       echo "Verifying pods and services..."
                       kubectl get pods -o wide
