@@ -2,21 +2,28 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = "lakshmanan1996"
-        IMAGE_NAME = "netflix"
-        IMAGE_TAG  = "latest"
+        // Docker
+        DOCKER_USER     = "lakshmanan1996"
+        IMAGE_NAME      = "netflix"
+        IMAGE_TAG       = "latest"
+
+        // Kubernetes
+        KUBE_DEPLOYMENT = "deployment.yaml"
+        KUBE_SERVICE    = "service.yaml"
     }
 
     stages {
 
         stage('Checkout Source') {
             steps {
+                echo "Checking out code from GitHub..."
                 checkout scm
             }
         }
 
         stage('Build Docker Image') {
             steps {
+                echo "Building Docker image: $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG"
                 sh '''
                   docker build -t $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG .
                 '''
@@ -25,6 +32,7 @@ pipeline {
 
         stage('Docker Login') {
             steps {
+                echo "Logging into Docker Hub..."
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
                     usernameVariable: 'DOCKER_USER',
@@ -39,6 +47,7 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
+                echo "Pushing Docker image to Docker Hub..."
                 sh '''
                   docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
                 '''
@@ -47,12 +56,24 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                withKubeConfig([credentialsId: 'kube-config-id']) 
-                {
-                    sh 'kubectl apply -f deployment.yaml'
-                    sh 'kubectl apply -f service.yaml'
+                echo "Deploying to Kubernetes cluster..."
+                withKubeConfig([credentialsId: 'kube-config-id']) {
+                    sh "kubectl apply -f $KUBE_DEPLOYMENT --record"
+                    sh "kubectl apply -f $KUBE_SERVICE"
+                    echo "Verifying pods and services..."
+                    sh 'kubectl get pods -o wide'
+                    sh 'kubectl get svc'
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ CI/CD pipeline completed successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed. Check console output for details."
         }
     }
 }
