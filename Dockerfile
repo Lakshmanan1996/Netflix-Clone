@@ -1,4 +1,4 @@
-FROM node:18-bullseye
+FROM node:16-bullseye
 
 WORKDIR /app
 
@@ -10,5 +10,4 @@ COPY . .
 RUN yarn build
 
 EXPOSE 3000
-
 CMD ["yarn", "start"]
