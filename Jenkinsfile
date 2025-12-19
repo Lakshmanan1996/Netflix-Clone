@@ -44,5 +44,15 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withKubeConfig([credentialsId: 'kube-config-id']) 
+                {
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
+                }
+            }
+        }
     }
 }
