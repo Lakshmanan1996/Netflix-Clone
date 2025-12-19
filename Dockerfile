@@ -1,8 +1,6 @@
-FROM node:18-alpine
+FROM node:16-bullseye   # or node:18-bullseye
 
 WORKDIR /app
-
-ENV NODE_OPTIONS=--openssl-legacy-provider
 
 COPY package*.json ./
 RUN yarn install
