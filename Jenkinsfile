@@ -18,7 +18,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                  echo "Building Docker image..."
                   docker build -t $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
@@ -28,11 +27,11 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_PASSWORD'
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh '''
-                      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                      echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     '''
                 }
             }
@@ -41,22 +40,9 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh '''
-                  echo "Pushing Docker image..."
                   docker push $DOCKER_USER/$IMAGE_NAME:$IMAGE_TAG
                 '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Docker image pushed successfully to Docker Hub"
-        }
-        failure {
-            echo "❌ Pipeline failed"
-        }
-        always {
-            sh 'docker logout || true'
         }
     }
 }
