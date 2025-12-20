@@ -1,12 +1,8 @@
 pipeline {
     agent any
 
-    environment {
-        DOCKER_IMAGE = "lakshmanan1996/netflix:latest"
-        KUBE_DEPLOYMENT_FILE = "k8s/deployment.yaml"
-    }
-
     stages {
+
         stage('Checkout Source') {
             steps {
                 echo "Checking out code from GitHub..."
@@ -14,41 +10,24 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Debug Workspace') {
             steps {
-                echo "Building Docker image: ${DOCKER_IMAGE}"
-                sh """
-                    docker build -t ${DOCKER_IMAGE} .
-                """
-            }
-        }
-
-        stage('Docker Login') {
-            steps {
-                echo "Logging into Docker Hub..."
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    sh """
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    """
-                }
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                echo "Pushing Docker image to Docker Hub..."
-                sh """
-                    docker push ${DOCKER_IMAGE}
-                """
+                sh '''
+                  echo "Workspace:"
+                  pwd
+                  echo "Files:"
+                  ls -R
+                '''
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
+                echo "Deploying to Minikube Kubernetes..."
                 sh '''
-                  pwd
-                  ls -R
                   kubectl apply -f k8s/
+                  kubectl get pods
+                  kubectl get svc
                 '''
             }
         }
@@ -56,10 +35,10 @@ pipeline {
 
     post {
         success {
-            echo "✅ Pipeline completed successfully!"
+            echo "✅ Netflix app deployed successfully to Kubernetes!"
         }
         failure {
-            echo "❌ Pipeline failed. Check console output for details."
+            echo "❌ Deployment failed. Check logs."
         }
     }
 }
