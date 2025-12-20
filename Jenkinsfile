@@ -43,20 +43,14 @@ pipeline {
             }
         }
 
-        /*stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes') {
             steps {
-                echo "Deploying to Kubernetes cluster..."
-                withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
-                    sh """
-                        export KUBECONFIG=$KUBECONFIG_FILE
-                        kubectl apply -f ${KUBE_DEPLOYMENT_FILE}
-                        echo "Verifying pods and services..."
-                        kubectl get pods -o wide
-                        kubectl get svc
-                    """
-                }
+                sh '''
+                  kubectl apply -f deployment.yaml
+                  kubectl apply -f service.yaml
+                '''
             }
-        }*/
+        }
     }
 
     post {
