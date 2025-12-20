@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        /*stage('Deploy to Kubernetes') {
             steps {
                 echo "Deploying to Kubernetes cluster..."
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG_FILE')]) {
@@ -56,7 +56,7 @@ pipeline {
                     """
                 }
             }
-        }
+        }/*
     }
 
     post {
