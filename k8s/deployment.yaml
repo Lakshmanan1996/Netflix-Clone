@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: netflix-clone
+  name: netflix-deployment
 spec:
   replicas: 2
   selector:
@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: netflix
-        image: lakshmanan1996/netflix-clone:latest
+        image: lakshmanan1996/netflix:latest   # ✅ your pushed image
         ports:
-        - containerPort: 3000
+        - containerPort: 80
