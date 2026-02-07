@@ -24,7 +24,7 @@ export default function Home(): React.ReactElement {
         <Image
           src="/assets/loginBg.jpg"
           alt="background image"
-          fill
+          layout="fill"
           priority
           className={styles.main__bgImage}
         />
