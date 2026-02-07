@@ -8,8 +8,8 @@ RUN npm install
 
 COPY . .
 
-# Optional: silence browserslist warning
-RUN npx browserslist@latest --update-db || true
+# Ensure public folder exists
+RUN mkdir -p public
 
 RUN npm run build
 
