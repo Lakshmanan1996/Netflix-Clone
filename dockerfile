@@ -7,6 +7,10 @@ COPY package*.json yarn.lock ./
 RUN npm install
 
 COPY . .
+
+# Optional: silence browserslist warning
+RUN npx browserslist@latest --update-db || true
+
 RUN npm run build
 
 # ---------- Runtime Stage ----------
