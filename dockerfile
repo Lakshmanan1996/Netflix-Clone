@@ -1,16 +1,28 @@
 # ---------- Build Stage ----------
-FROM node:18-alpine AS build
+FROM node:18-alpine AS builder
+
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
 
 COPY . .
-ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN npm run build
 
-# ---------- Production Stage ----------
-FROM nginx:alpine
-COPY --from=build /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# ---------- Runtime Stage ----------
+FROM node:18-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy only required files
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.js ./next.config.js
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
