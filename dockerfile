@@ -1,5 +1,5 @@
 # ---------- Build Stage ----------
-FROM node:18-alpine AS builder
+FROM node:16-alpine AS builder
 
 WORKDIR /app
 
@@ -10,13 +10,11 @@ COPY . .
 RUN npm run build
 
 # ---------- Runtime Stage ----------
-FROM node:18-alpine
+FROM node:16-alpine
 
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# Copy only required files
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
